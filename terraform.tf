@@ -5,33 +5,40 @@ terraform {
       version = "= 3.74.0"
     }
   }
+  
+  backend "s3" {
+    bucket         = "terraform-state-tes"
+    key            = "terraform-tfstate"
+    region         = "us-east-2"
+    dynamodb_table = "terraform_locks_test"
+    encrypt        = true
+  }
 }
 
 provider "aws" {
-  region = REGION
-  shared_credentials_file = "~/.aws/terraform"
+  region = var.aws_region
+  shared_credentials_file = "~/.aws/credentials"
   profile = "default"
-  allowed_account_ids = [ACCOUNT_ID]
-  forbidden_account_ids = [ACCOUNT_ID]
+  allowed_account_ids = [var.aws_account_id]
+  forbidden_account_ids = []
 
   default_tags {
     tags {
-      Company = "Your Company"
-      Environment = "default"
-      Repository = "adeveloper633/baseline"
+      Company = var.company_name
+      Environment = var.default_environment
+      Repository = var.git_repository
     }
   }
 
   ignore_tags {
-    keys = ["KeyToIgnore"]
+    keys = var.ignore_tags
   }
 
   insecure = false
 
-  assume_role {
-    role_arn     = "arn:aws:iam::ACCOUNT_ID:role/ROLE_NAME"
-    session_name = "SESSION_NAME"
-    external_id  = "EXTERNAL_ID"
-  }
+#  assume_role {
+#    role_arn     = "arn:aws:iam::${aws_account_id}:role/${aws_role_name}"
+#    session_name = var.sts_session_name
+#  }
 }
 
